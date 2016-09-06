@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans  
+     http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+   
+    <!-- 使用MethodInvokingJobDetailFactoryBean，任务类可以不实现Job接口，通过targetMethod指定调用方法-->
+    <bean id="wechatJob"  class="com.rustic.wechat.commons.BaseTokenClient"/>
+    
+    <!-- =========================配置类方法============================ -->
+	<bean id="wechatJobMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+	    <property name="targetObject" ref="wechatJob"/> 
+	    <property name="targetMethod" value="updateBaseToken" />
+	    <property name="concurrent"   value="true"/>
+	</bean>
+  
+	<!-- ======================== 调度触发器,设置特定类的class方法的执行周期======================== -->
+	<bean id="wechatCronTriggerBean" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+	    <property name="jobDetail" ref="wechatJobMethod"></property>
+	    <property name="cronExpression" value="0 1,7,16,31,45 * * * ?"></property><!-- 每小时每15分触发 -->
+	</bean>
+  
+	<!-- ======================== 调度工厂,执行那些触发器 ======================== -->  
+	<bean id="SpringJobSchedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">  
+	    <property name="triggers">  
+	        <list>
+	            <ref bean="wechatCronTriggerBean"/>
+	        </list>  
+	    </property>  
+	</bean> 
+</beans>

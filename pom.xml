@@ -1,0 +1,214 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.rustic</groupId>
+  <artifactId>wechat</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>wechat</name>
+  <packaging>war</packaging>
+  <description>rustic's wechat</description>
+  
+  <properties>
+	<spring.version>4.2.6.RELEASE</spring.version>
+	<hibernate.version>4.3.11.Final</hibernate.version>
+	<cglib-nodep.version>3.1</cglib-nodep.version>
+	<log4j.version>1.2.17</log4j.version>
+	<javax.servlet.version>3.0.1</javax.servlet.version>
+	<javassist.version>3.16.1-GA</javassist.version>
+	<mysql.connector.version>5.1.32</mysql.connector.version>
+	<wechat.sdk.version>2.8.0</wechat.sdk.version>
+	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+   </properties>
+  
+   <dependencies>
+   	<!-- Spring-->
+   	<dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-expression</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    
+    <!-- Spring mvc-->
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+    </dependency>
+    
+    <!-- hibernate-->
+	<dependency>
+		<groupId>org.hibernate</groupId>
+		<artifactId>hibernate-core</artifactId>
+		<version>${hibernate.version}</version>
+	</dependency>
+	
+	<!-- log-->
+	<dependency>
+		<groupId>log4j</groupId>
+		<artifactId>log4j</artifactId>
+		<version>${log4j.version}</version>
+	</dependency>
+	
+	<!-- wechat-->
+    <dependency>
+  		<groupId>com.github.liyiorg</groupId>
+  		<artifactId>weixin-popular</artifactId>
+  		<version>${wechat.sdk.version}</version>
+  	</dependency>
+  	
+  	<!-- cglib -->
+  	<dependency>  
+        <groupId>cglib</groupId>  
+        <artifactId>cglib-nodep</artifactId>  
+        <version>${cglib-nodep.version}</version>  
+    </dependency>
+    
+    <!-- servlet -->
+    <dependency>  
+        <groupId>javax.servlet</groupId>  
+        <artifactId>javax.servlet-api</artifactId>  
+        <version>${javax.servlet.version}</version>
+        <scope>provided</scope>  
+    </dependency>
+    <dependency>  
+        <groupId>org.javassist</groupId>  
+        <artifactId>javassist</artifactId>  
+        <version>${javassist.version}</version>
+    </dependency>
+    
+    <!-- data access -->
+    <dependency>
+		<groupId>c3p0</groupId>
+		<artifactId>c3p0</artifactId>
+		<version>0.9.1.2</version>
+	</dependency>
+	<dependency>
+		<groupId>com.mchange</groupId>
+		<artifactId>mchange-commons-java</artifactId>
+		<version>0.2.2</version>
+	</dependency>
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>${mysql.connector.version}</version>
+		<scope>runtime</scope>
+	</dependency>
+	
+	<!--定时器-->
+	<dependency>
+	    <groupId>org.quartz-scheduler</groupId>
+	    <artifactId>quartz</artifactId>
+	    <version>2.2.3</version>
+	</dependency>
+  </dependencies>
+  
+  <build>
+	<plugins>
+		<!-- 清理插件 -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-antrun-plugin</artifactId>
+			<executions>
+				<execution>
+					<id>delete-WEB-INF-lib</id>
+					<phase>pre-clean</phase>
+					<configuration>
+						<tasks>
+							<echo message="删除webapp/WEB-INF/lib" />
+							<delete dir="webapp/WEB-INF/lib" />
+							<echo message="删除webapp/WEB-INF/classes" />
+							<delete dir="webapp/WEB-INF/classes" />
+						</tasks>
+					</configuration>
+					<goals>
+						<goal>run</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+		<!-- 编译时将依赖jar包拷贝到指定文件中 -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-dependency-plugin</artifactId>
+			<version>2.4</version>
+			<executions>
+				<execution>
+					<goals>
+						<goal>copy-dependencies</goal>
+					</goals>
+					<configuration>
+						<outputDirectory>
+							webapp/WEB-INF/lib
+						</outputDirectory>
+						<overWriteReleases>
+							true
+						</overWriteReleases>
+						<excludeScope>provided</excludeScope>
+						<overWriteIfNewer>
+							true
+						</overWriteIfNewer>
+						<overWriteSnapshots>
+							true
+						</overWriteSnapshots>
+					</configuration>
+				</execution>
+			</executions>
+		</plugin>
+		<!-- 指定将静态文件添加到war包中 -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-war-plugin</artifactId>
+			<version>2.4</version>
+			<configuration>
+				<webappDirectory>${basedir}/webapp</webappDirectory>
+				<warSourceDirectory>${basedir}/webapp</warSourceDirectory>
+			</configuration>
+		</plugin>
+	</plugins>
+  </build>
+</project>
