@@ -43,7 +43,7 @@ public class ReceiveController {
 	/**
 	 * 用于监听微信后台返回的事件信息
 	 */
-	@RequestMapping(value="/listen", method= RequestMethod.POST)
+	@RequestMapping(value="/listen")
 	public void listener(HttpServletRequest request ,HttpServletResponse response) {
 		try {
 			ServletInputStream inputStream = request.getInputStream();
