@@ -11,10 +11,18 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rustic.wechat.util.Constants;
 
 import weixin.popular.bean.message.EventMessage;
@@ -22,6 +30,7 @@ import weixin.popular.bean.xmlmessage.XMLMessage;
 import weixin.popular.bean.xmlmessage.XMLNewsMessage;
 import weixin.popular.bean.xmlmessage.XMLNewsMessage.Article;
 import weixin.popular.bean.xmlmessage.XMLTextMessage;
+import weixin.popular.client.HttpClientFactory;
 import weixin.popular.util.SignatureUtil;
 import weixin.popular.util.XMLConverUtil;
 
@@ -32,6 +41,8 @@ import weixin.popular.util.XMLConverUtil;
 @Controller
 @RequestMapping("receive")
 public class ReceiveController {
+	
+	private static Logger logger = Logger.getLogger(ReceiveController.class);
 	
 //	@Autowired(required=true)
 //	private BaseTokenDao baseTokenDao;
@@ -77,6 +88,7 @@ public class ReceiveController {
 				XMLMessage xmlMessage = null;
 				if ("event".equals(eventMessage.getMsgType())) {
 					if (!"LOCATION".equals(eventMessage.getEvent()) && !"unsubscribe".equals(eventMessage.getEvent())) {
+						logger.info("user's event-->" + eventMessage.getEvent());
 						if ("subscribe".equals(eventMessage.getEvent())) {
 							xmlMessage = new XMLTextMessage(
 									eventMessage.getFromUserName(), 
@@ -93,6 +105,7 @@ public class ReceiveController {
 						}
 					}
 				} else if ("text".equals(eventMessage.getMsgType())) {
+					logger.info("user's content-->" + eventMessage.getContent());
 					if (null == eventMessage.getContent()) {
 						xmlMessage = new XMLTextMessage(
 								eventMessage.getFromUserName(), 
@@ -117,15 +130,24 @@ public class ReceiveController {
 									eventMessage.getFromUserName(),
 									eventMessage.getToUserName(),
 									articles);
-						} else {
+						} else if (eventMessage.getContent().contains("交流")) {
 							xmlMessage = new XMLTextMessage(
 									eventMessage.getFromUserName(), 
 									eventMessage.getToUserName(), 
 									"这是我的<a href='http://blog.rustic.pub'>小站</a>，欢迎交流~\n"
 									+ "你是我的一束光");
+						} else {
+							String resChat = this.chatBot(eventMessage.getContent());
+							xmlMessage = new XMLTextMessage(
+									eventMessage.getFromUserName(),
+									eventMessage.getToUserName(),
+									null == resChat ? 
+									"这是我的<a href='http://blog.rustic.pub'>小站</a>，欢迎交流~\n"
+									+ "你是我的一束光" : resChat);
 						}
 					}
 				}
+				logger.info("wechat's response-->" + JSONObject.toJSONString(xmlMessage));
 				xmlMessage.outputStreamWrite(outputStream);
 			}
 			this.outputStreamWrite(outputStream,"");
@@ -147,6 +169,70 @@ public class ReceiveController {
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	/**
+	 * 获取聊天机器人的响应回复
+	 * 关于聊天机器人的具体实现可以参考
+	 * http://blog.just4fun.site/create-wechat-bot.html
+	 * @return
+	 */
+	private String chatBot(String chatStr) {
+		HttpUriRequest httpUriRequest = RequestBuilder.get()
+				.setUri("http://127.0.0.1:8000/get_response?user_input=" + chatStr)
+				.build();
+		CloseableHttpClient httpClient = HttpClientFactory.createHttpClient(100, 10, 5000, 2);
+		try {
+			CloseableHttpResponse response = httpClient.execute(httpUriRequest);
+			int responseCode = response.getStatusLine().getStatusCode();
+			logger.info("chatBot response's code -->:" + responseCode);
+			if (200 != responseCode) {
+				return null;
+			}
+			//获取响应实体
+			HttpEntity entity = response.getEntity();
+			if (null == entity) {
+				return null;
+			}
+			JSONObject obj = JSONObject.parseObject(EntityUtils.toString(entity));
+			if (null == obj) {
+				return null;
+			}
+			httpClient.close();
+			return obj.getString("response");
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static void main(String[] arg) {
+		HttpUriRequest httpUriRequest = RequestBuilder.get()
+				.setUri("http://54.149.48.112:8000/get_response?user_input=复杂优于晦涩")
+				.build();
+		CloseableHttpClient httpClient = HttpClientFactory.createHttpClient(100, 10, 5000, 2);
+		try {
+			CloseableHttpResponse response = httpClient.execute(httpUriRequest);
+			int responseCode = response.getStatusLine().getStatusCode();
+			System.out.println("response code -->:" + responseCode);
+			if (200 == responseCode) {
+				HttpEntity entity = response.getEntity();
+				if (null != entity) {
+					String content = EntityUtils.toString(entity);
+					System.out.println(content);
+					JSONObject obj = JSONObject.parseObject(content);
+					String resStr = obj.getString("response");
+					System.out.println(resStr);
+					httpClient.close();
+				}
+			}
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
