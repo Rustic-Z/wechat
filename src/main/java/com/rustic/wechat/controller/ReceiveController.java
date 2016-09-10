@@ -180,9 +180,9 @@ public class ReceiveController {
 	private String chatBot(String chatStr) {
 		logger.info("per replace chatStr-->:" + chatStr);
 		//将双引号替换成单引号
-		chatStr = chatStr.replace("\"", "'");
+		chatStr = chatStr.replace("\"", "%27");
 		HttpUriRequest httpUriRequest = RequestBuilder.get()
-				.setUri("http://127.0.0.1:8000/get_response?user_input=\"" + chatStr + "\"")
+				.setUri("http://127.0.0.1:8000/get_response?user_input=" + chatStr + "")
 				.build();
 		logger.info("request url -->:" + httpUriRequest.getURI());
 		CloseableHttpClient httpClient = HttpClientFactory.createHttpClient(100, 10, 5000, 2);
@@ -213,9 +213,13 @@ public class ReceiveController {
 	}
 	
 	public static void main(String[] arg) {
+		String chatStr = "\"复杂优 于晦涩\"";
+		System.out.println("per replace chatStr-->:" + chatStr);
+		chatStr = chatStr.replace("\"", "%27");
 		HttpUriRequest httpUriRequest = RequestBuilder.get()
-				.setUri("http://54.149.48.112:8000/get_response?user_input=复杂优于晦涩")
+				.setUri("http://54.149.48.112:8000/get_response?user_input=" + chatStr + "")
 				.build();
+		System.out.println("request url -->:" + httpUriRequest.getURI());
 		CloseableHttpClient httpClient = HttpClientFactory.createHttpClient(100, 10, 5000, 2);
 		try {
 			CloseableHttpResponse response = httpClient.execute(httpUriRequest);
