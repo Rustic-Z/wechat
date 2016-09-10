@@ -178,8 +178,10 @@ public class ReceiveController {
 	 * @return
 	 */
 	private String chatBot(String chatStr) {
+		//将双引号替换成单引号
+		chatStr = chatStr.replace("\"", "'");
 		HttpUriRequest httpUriRequest = RequestBuilder.get()
-				.setUri("http://127.0.0.1:8000/get_response?user_input=" + chatStr)
+				.setUri("http://127.0.0.1:8000/get_response?user_input=\"" + chatStr + "\"")
 				.build();
 		CloseableHttpClient httpClient = HttpClientFactory.createHttpClient(100, 10, 5000, 2);
 		try {
